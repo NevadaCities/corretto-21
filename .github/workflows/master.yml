@@ -4,6 +4,9 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
+      - name: Disable git autocrlf
+        run: git config --global core.autocrlf false
+
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
@@ -23,9 +26,8 @@ jobs:
 
       - name: Configure and Build
         shell: bash
-        run: |
-          bash configure --with-toolchain-version=2022
-          make images
+        # 【关键修复】使用单行执行，避免行尾的 \r 被吃进参数里
+        run: bash configure --with-toolchain-version=2022 && make images
 
       - name: Upload JDK Artifact
         uses: actions/upload-artifact@v4

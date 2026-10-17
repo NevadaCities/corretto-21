@@ -1,5 +1,6 @@
 name: Build Corretto 21 GenShen for Windows
 on: [workflow_dispatch]
+
 jobs:
   build:
     runs-on: windows-2022
@@ -8,18 +9,18 @@ jobs:
         run: git config --global core.autocrlf false
 
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: 'generational-shenandoah'
 
       - name: Setup Boot JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'corretto'
 
       - name: Install Cygwin (Required for build)
-        uses: egor-tensin/setup-cygwin@v4
+        uses: egor-tensin/setup-cygwin@v4.0.2
         with:
           install-dir: 'C:\tools\cygwin'
           packages: autoconf make zip unzip git
@@ -28,8 +29,13 @@ jobs:
         shell: bash
         run: bash configure --with-toolchain-version=2022 && make images
 
+      - name: Avoid Cygwin git in checkout post-step
+        if: always()
+        shell: powershell
+        run: Rename-Item C:\tools\cygwin\bin\git.exe cygwin_git.exe -ErrorAction SilentlyContinue
+
       - name: Upload JDK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: windows-jdk-21-genshen
           path: build/windows-x86_64-server-release/images/jdk
